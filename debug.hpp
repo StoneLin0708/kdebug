@@ -30,6 +30,8 @@ public:
 
     void list();
 
+    bool flag_logged;
+
 private:
     friend class dbg_construct;
     dbg();

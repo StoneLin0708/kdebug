@@ -24,6 +24,7 @@ dbg &debug = *dbgc.pdbg;
 dbg::dbg()
 {
     starttime = Clock::now();
+    flag_logged = true;
 }
 
 auto dbg::time(){
@@ -34,14 +35,17 @@ auto dbg::time(){
 
 stringstream& dbg::operator<<(level l)
 {
-    _ss.seekg(0,ios::end);
-    if(_ss.tellg()!=0)
-    {
-        _ss.seekg(0);
+    //_ss.seekg(0,ios::end);
+    //if(_ss.tellg()!=0)
+    //{
+        //_ss.seekg(0);
+    if(!flag_logged){
         log();
     }
+
     _level = l;
     _time = time();
+    flag_logged = false;
 
     return _ss;
 }
@@ -54,10 +58,13 @@ void dbg::log()
     _ss.str(string());
     _ss.clear();
     s.clear();
+    flag_logged = true;
 }
 
 void dbg::list()
 {
+    if(!flag_logged)
+        log();
     for(auto i=_log.begin();i!=_log.end();++i)
     {
         cout<< get<0>(*i)<< " "<< levelstring[get<1>(*i)]<< " : "<< get<2>(*i)<<'\n';
