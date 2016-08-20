@@ -61,13 +61,14 @@ void dbg::log()
     flag_logged = true;
 }
 
-void dbg::list()
+void dbg::list(level l)
 {
     if(!flag_logged)
         log();
     for(auto i=_log.begin();i!=_log.end();++i)
     {
-        cout<< get<0>(*i)<< " "<< levelstring[get<1>(*i)]<< " : "<< get<2>(*i)<<'\n';
+        if( get<1>(*i) >= l)
+            cout<< get<0>(*i)<< " "<< levelstring[get<1>(*i)]<< " : "<< get<2>(*i)<<'\n';
     }
 };
 

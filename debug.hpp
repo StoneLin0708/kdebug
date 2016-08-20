@@ -28,7 +28,7 @@ public:
 
     auto time();
 
-    void list();
+    void list(level l=error);
 
     bool flag_logged;
 

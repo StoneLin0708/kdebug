@@ -7,5 +7,7 @@ int main(){
     debug<<warning<<"hi2";
     debug<<error<<"hi3";
     debug.list();
+    debug.list(warning);
+    debug.list(info);
 
 }
