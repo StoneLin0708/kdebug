@@ -8,15 +8,12 @@ int main(){
     LOG(info) << "info logging\n";
     sleep(1);
 
+    debug.set_fileoutput("loggin.txt");
+
+    LOG(file) << "file logging\n";
+
     LOG(warning) << "warning logging\n";
     LOG(error) << "error logging\n";
-
-    // debug.list();
-
-    // debug << "Hello world!!!!\n";
-    // debug << "Hello world!!!!\n";
-
-    // debug.list();
 
     return 0;
 }
