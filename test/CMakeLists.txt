@@ -11,3 +11,7 @@ add_executable(debug_test_c debug_test.c)
 
 target_link_libraries(debug_test kdebug)
 target_link_libraries(link_test kdebug)
+
+add_test(cpp_debug_test ./debug_test)
+add_test(cpp_link_test ./link_test)
+add_test(c_debug_test ./debug_test_c)
