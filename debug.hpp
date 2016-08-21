@@ -44,6 +44,10 @@ public:
     dbg() : flag_logged(true),
             starttime(Clock::now()) {}
 
+    ~dbg() {
+        if (output_file.is_open()) output_file.close();
+    }
+
     dbg& set_level(level l)
     {
         if(!flag_logged){
@@ -54,6 +58,10 @@ public:
         _time = time();
         flag_logged = false;
         return *this;
+    }
+
+    void set_fileoutput(const std::string filename) {
+        output_file.open(filename.c_str(), std::ios::out);
     }
 
     template<typename T>
@@ -147,13 +155,11 @@ extern dbg<std::chrono::high_resolution_clock,
 dbg<std::chrono::high_resolution_clock,
     std::chrono::microseconds,
     Unit::Microseconds> debug;
-
+}
 
 // macros
 #ifdef DEBUG_MESSAGE
-#define LOG(level) debug.set_level(level)
+#define LOG(level) kdebug::debug.set_level(level)
 #else
-#define LOG(level) debug.set_level(null)
+#define LOG(level) kdebug::debug.set_level(null)
 #endif
-
-}
