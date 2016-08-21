@@ -1,4 +1,5 @@
 #pragma once
+#include <ostream>
 #include <sstream>
 #include <string>
 #include <list>
@@ -19,6 +20,7 @@ extern std::map<level,const char*> levelstring;
 class dbg{
 public:
     typedef std::chrono::high_resolution_clock Clock;
+    typedef std::tuple<Clock::rep, level, std::string> log_t;
 
     const char* levelstr(level);
 
@@ -26,7 +28,11 @@ public:
 
     void log();
 
-    auto time();
+    std::list<log_t>::iterator begin();
+    std::list<log_t>::iterator end();
+    log_t& back();
+
+    Clock::rep time();
 
     void list(level l=error);
 
@@ -43,9 +49,11 @@ private:
     level _level;
     std::stringstream _ss;
 
-    std::list<std::tuple<Clock::rep, level, std::string>> _log;
+    std::list<log_t> _log;
 
 };
+
+std::ostream& operator<<(std::ostream&, dbg::log_t&);
 
 extern dbg &debug;
 

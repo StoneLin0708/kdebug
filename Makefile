@@ -6,7 +6,7 @@ TESTBIN = build/test
 
 all: $(RELBIN)
 
-$(RELBIN):
+$(RELBIN): debug.cpp debug.hpp
 	@mkdir -p build
 	g++ -O3 -std=c++14 -c debug.cpp -o debug.o
 	ar rcs $@ debug.o
@@ -14,5 +14,5 @@ $(RELBIN):
 
 test: $(TESTBIN)
 
-$(TESTBIN):
+$(TESTBIN): debug.cpp debug.hpp test.cpp
 	g++ -O3 -std=c++14 debug.cpp test.cpp -o $@

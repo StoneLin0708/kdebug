@@ -27,7 +27,7 @@ dbg::dbg()
     flag_logged = true;
 }
 
-auto dbg::time(){
+dbg::Clock::rep dbg::time(){
     return std::chrono::duration_cast
         <std::chrono::microseconds>
         (Clock::now()-starttime).count();
@@ -53,7 +53,7 @@ stringstream& dbg::operator<<(level l)
 void dbg::log()
 {
     static string s;
-    _ss>> s;
+    getline(_ss,s);
     _log.push_back(make_tuple(_time, _level, s));
     _ss.str(string());
     _ss.clear();
@@ -61,15 +61,40 @@ void dbg::log()
     flag_logged = true;
 }
 
-void dbg::list(level l)
+std::list<dbg::log_t>::iterator dbg::begin()
+{
+    return _log.begin();
+}
+
+std::list<dbg::log_t>::iterator dbg::end()
 {
     if(!flag_logged)
         log();
-    for(auto i=_log.begin();i!=_log.end();++i)
+    return _log.end();
+}
+
+dbg::log_t& dbg::back()
+{
+    if(!flag_logged)
+        log();
+    return _log.back();
+}
+
+void dbg::list(level l)
+{
+    for(auto i=begin();i!=end();++i)
     {
         if( get<1>(*i) >= l)
-            cout<< get<0>(*i)<< " "<< levelstring[get<1>(*i)]<< " : "<< get<2>(*i)<<'\n';
+            cout<<*i<<'\n';
     }
 };
+
+std::ostream& operator<<(std::ostream& os, dbg::log_t& log)
+{
+    os<< get<0>(log)<< ' '
+      << levelstring[get<1>(log)]<<" : "
+      << get<2>(log);
+    return os;
+}
 
 }
