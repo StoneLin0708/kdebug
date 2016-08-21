@@ -4,16 +4,14 @@
 using namespace kdebug;
 
 int main(){
-    LOG(null) << "info logging\n";
-    LOG(info) << "info logging\n";
+    LOG(null) << "info logging";
+    LOG(info) << "info logging";
     sleep(1);
 
     debug.set_fileoutput("loggin.txt");
 
-    LOG(file) << "file logging\n";
-
-    LOG(warning) << "warning logging\n";
-    LOG(error) << "error logging\n";
-
+    LOG(file) << "file logging";
+    LOG(warning) << "warning logging";
+    LOG(error) << "error logging";
     return 0;
 }
