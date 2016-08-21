@@ -1,18 +1,18 @@
+CXX := g++
+CXX_FLAGS := -g -std=c++11 -O3 -Wall -Wextra -fPIC
+CXX_FLAGS := $(CXX_FLAGS) -DDEBUG_MESSAGE
 
-RELBIN = build/libdebug.a
-TESTBIN = build/test
+TARGET := debug_test
 
-.PHONY: all test
+all: $(TARGET)
 
-all: $(RELBIN)
+debug_test: debug_test.o
+	$(CXX) debug_test.o -o $@
 
-$(RELBIN): debug.cpp debug.hpp
-	@mkdir -p build
-	g++ -O3 -std=c++14 -c debug.cpp -o debug.o
-	ar rcs $@ debug.o
-	rm debug.o
+debug_test.o: debug_test.cpp debug.hpp
+	$(CXX) $(CXX_FLAGS) debug_test.cpp -c -o $@
 
-test: $(TESTBIN)
+clean:
+	rm -rf *.o $(TARGET)
 
-$(TESTBIN): debug.cpp debug.hpp test.cpp
-	g++ -O3 -std=c++14 debug.cpp test.cpp -o $@
+.phony: all clean
