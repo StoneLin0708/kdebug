@@ -5,48 +5,84 @@
 #include <chrono>
 #include <tuple>
 #include <map>
+#include <iostream>
+#include <streambuf>
+#include <fstream>
 
 namespace kdebug{
 
 enum level{
+    null,
+    file,
     info,
     warning,
-    error,
+    error
 };
 
 extern std::map<level,const char*> levelstring;
+extern std::ostream cnull;
 
 class dbg{
 public:
     typedef std::chrono::high_resolution_clock Clock;
 
-    const char* levelstr(level);
+    dbg();
 
-    std::stringstream& operator<<(level);
+    void set_level(level l);
+
+    template<typename T>
+    dbg& operator<<(T t) {
+        _ss << t;
+        switch (_level) {
+          case null:
+            cnull << t;
+            break;
+          case file:
+          case info:
+          case warning:
+            std::cout << t;
+            break;
+          case error:
+            std::cerr << t;
+            break;
+        }
+        return *this;
+    }
 
     void log();
 
-    auto time();
+    long time();
 
     void list();
 
     bool flag_logged;
 
+
 private:
-    friend class dbg_construct;
-    dbg();
-    ~dbg(){};
 
     Clock::time_point starttime;
 
     Clock::rep _time;
+
     level _level;
+
     std::stringstream _ss;
 
-    std::list<std::tuple<Clock::rep, level, std::string>> _log;
+    std::ofstream output_file;
 
+    std::list<std::tuple<Clock::rep, level, std::string>> _log;
 };
 
-extern dbg &debug;
+extern dbg debug;
+
+#ifdef DEBUG_MESSAGE
+#define LOG(level)           \
+    debug.set_level(level);  \
+    debug
+#else
+#define LOG(level)           \
+    debug.set_level(null);  \
+    debug
+#endif
 
 }
