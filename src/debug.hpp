@@ -61,18 +61,16 @@ extern std::map<level, const std::string> levelstring;
 extern std::ostream cnull;
 extern Debug debug;
 
-//template <typename Clock, typename Duration>
-//std::ostream& operator<<(std::ostream&, dbg<Clock,Duration>::log_t&);
-/*
-std::ostream& operator<<(std::ostream& os, dbg::log_t& log)
-{
-    os<< get<0>(log)<< ' '
-      << levelstring[get<1>(log)]<<" : "
-      << get<2>(log);
-    return os;
-}
-*/
 
+}
+
+template <typename Clock, typename Duration>
+std::ostream& operator<<(std::ostream& os, typename kdebug::dbg<Clock,Duration>::log_t& l)
+{
+    os<< std::get<0>(l)<< ' '
+      << kdebug::levelstring[std::get<1>(l)]<<" : "
+      << std::get<2>(l);
+    return os;
 }
 
 // macros
