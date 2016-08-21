@@ -26,9 +26,22 @@ class dbg{
 public:
     typedef std::chrono::high_resolution_clock Clock;
 
-    dbg();
+    dbg()
+    {
+        starttime = Clock::now();
+        flag_logged = true;
+    }
 
-    void set_level(level l);
+    void set_level(level l)
+    {
+        if(!flag_logged){
+            log();
+        }
+
+        _level = l;
+        _time = time();
+        flag_logged = false;
+    }
 
     template<typename T>
     dbg& operator<<(T t) {
@@ -49,11 +62,37 @@ public:
         return *this;
     }
 
-    void log();
+    void log()
+    {
+        static std::string s;
+        _ss>> s;
+        _log.push_back(make_tuple(_time, _level, s));
+        _ss.str(std::string());
+        _ss.clear();
+        s.clear();
+        flag_logged = true;
+    }
 
-    long time();
+    long time()
+    {
+        return std::chrono::duration_cast
+            <std::chrono::microseconds>
+            (Clock::now()-starttime).count();
+    }
 
-    void list();
+    static std::string timestr();
+
+    void list()
+    {
+        if(!flag_logged)
+            log();
+        for(auto i=_log.begin();i!=_log.end();++i)
+        {
+            std::cout << std::get<0>(*i) << " "
+                << levelstring[std::get<1>(*i)]
+                << " : "<< std::get<2>(*i) <<'\n';
+        }
+    }
 
     bool flag_logged;
 
@@ -74,6 +113,22 @@ private:
 };
 
 extern dbg debug;
+
+std::map<level,const char*> levelstring = {
+    {info,"info"},
+    {warning,"warning"},
+    {error,"error"},
+};
+
+class NullBuffer : public std::streambuf
+{
+public:
+    int overflow(int c) { return c; }
+};
+
+NullBuffer null_buffer;
+std::ostream cnull(&null_buffer);
+dbg debug;
 
 #ifdef DEBUG_MESSAGE
 #define LOG(level)           \
