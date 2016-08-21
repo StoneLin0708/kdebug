@@ -42,8 +42,7 @@ template <typename Clock, typename Duration, const char *const Unit>
 class dbg{
 public:
     dbg() : flag_logged(true),
-            starttime(Clock::now()),
-            output_file("log.txt", std::ios::out) {}
+            starttime(Clock::now()) {}
 
     dbg& set_level(level l)
     {
