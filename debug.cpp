@@ -61,12 +61,12 @@ void dbg::log()
     flag_logged = true;
 }
 
-std::list<dbg::log_t>::iterator dbg::begin()
+dbg::iterator dbg::begin()
 {
     return _log.begin();
 }
 
-std::list<dbg::log_t>::iterator dbg::end()
+dbg::iterator dbg::end()
 {
     if(!flag_logged)
         log();

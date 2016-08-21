@@ -21,6 +21,7 @@ class dbg{
 public:
     typedef std::chrono::high_resolution_clock Clock;
     typedef std::tuple<Clock::rep, level, std::string> log_t;
+    typedef std::list<log_t>::iterator iterator;
 
     const char* levelstr(level);
 
@@ -28,8 +29,8 @@ public:
 
     void log();
 
-    std::list<log_t>::iterator begin();
-    std::list<log_t>::iterator end();
+    iterator begin();
+    iterator end();
     log_t& back();
 
     Clock::rep time();
