@@ -37,12 +37,13 @@ dbg<Clock, Duration>::~dbg() {
 
 template <typename Clock, typename Duration>
 dbg<Clock, Duration> &dbg<Clock, Duration>::set_level(level l) {
-    _level = l;
-    _time = time();
-
     if(!_flag_logged){
         log();
     }
+
+    _level = l;
+    _time = time();
+
     _flag_logged = false;
     return *this;
 }
@@ -59,6 +60,7 @@ dbg<Clock, Duration> &dbg<Clock, Duration>::operator<< (T t) {
     switch (_level) {
         case null:
             return *this;
+            break;
         case file:
             if (_output_file.is_open()) {
                 _output_file << "[" << levelstring[_level]
@@ -66,6 +68,7 @@ dbg<Clock, Duration> &dbg<Clock, Duration>::operator<< (T t) {
             }
             break;
         case info:
+            break;
         case warning:
             std::cout << "[" << levelstring[_level]
                 << ": " << timestr() << "]: " << t << '\n';
@@ -145,7 +148,6 @@ template class dbg <std::chrono::high_resolution_clock,
                     std::chrono::microseconds>;
 
 Debug debug;
-
 // implement all type support by ostream
 template Debug& Debug::operator<< (bool);
 template Debug& Debug::operator<< (short);
@@ -165,5 +167,6 @@ template Debug& Debug::operator<< (streambuf*);
 template Debug& Debug::operator<< (ostream& (*fp) (ostream&));
 template Debug& Debug::operator<< (std::ios& (*fp)(std::ios&));
 template Debug& Debug::operator<< (std::ios_base& (*fp)(std::ios_base&));
+
 
 }

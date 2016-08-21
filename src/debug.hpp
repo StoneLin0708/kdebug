@@ -79,3 +79,4 @@ std::ostream& operator<<(std::ostream& os, typename kdebug::dbg<Clock,Duration>:
 #else
 #define LOG(level) kdebug::debug.set_level(kdebug::null)
 #endif
+

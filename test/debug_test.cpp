@@ -11,7 +11,8 @@ int main(){
     debug.set_fileoutput("loggin.txt");
 
     LOG(file) << "file logging";
-    LOG(warning) << "warning logging";
-    LOG(error) << "error logging";
+    LOG(warning) << "warning logging"<<" abc";
+    LOG(error) << "error logging"<<" abc!!";
+    debug.list();
     return 0;
 }
