@@ -43,6 +43,7 @@ public:
 
 private:
     typename Clock::time_point _starttime;
+    typename Clock::time_point _lastlogtime;
     typename Clock::rep _time;
 
     level _level;
@@ -70,6 +71,12 @@ extern Log log;
 
 std::ostream& operator<<(std::ostream& os,
                          kdebug::Debug::log_t& l);
+
+std::ostream& operator<<(std::ostream& os,
+                         kdebug::Timer::log_t& l);
+
+std::ostream& operator<<(std::ostream& os,
+                         kdebug::Log::log_t& l);
 
 #undef DBG
 #undef TIMER

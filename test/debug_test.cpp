@@ -2,14 +2,15 @@
 #include <unistd.h>
 #include <iostream>
 
-using namespace kdebug;
+//using namespace kdebug;
 
 int main(){
+    std::cout<< kdebug::log.back();
     LOG(null) << "info logging";
     LOG(info) << "info logging";
     sleep(1);
 
-    log.set_fileoutput("loggin.txt");
+    kdebug::log.set_fileoutput("loggin.txt");
 
     LOG(warning) << "warning logging";
     LOG(error) << "error logging";

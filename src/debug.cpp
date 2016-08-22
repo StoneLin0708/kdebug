@@ -158,7 +158,7 @@ typename dbg<Clock, Duration>::log_t dbg<Clock, Duration>::back() {
         return _log.back();
     } else {
         string empt = "empty";
-        return std::make_tuple(_time, _level, empt);
+        return std::make_tuple(_time, null, empt);
     }
 }
 
@@ -234,6 +234,20 @@ template Log& Log::operator<< (std::ios_base& (*fp)(std::ios_base&));
 }
 
 std::ostream& operator<<(std::ostream& os, kdebug::Debug::log_t& l) {
+    os<< std::get<0>(l)<< ' '
+      << kdebug::levelstring[std::get<1>(l)]<<" : "
+      << std::get<2>(l);
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, kdebug::Timer::log_t& l) {
+    os<< std::get<0>(l)<< ' '
+      << kdebug::levelstring[std::get<1>(l)]<<" : "
+      << std::get<2>(l);
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, kdebug::Log::log_t& l) {
     os<< std::get<0>(l)<< ' '
       << kdebug::levelstring[std::get<1>(l)]<<" : "
       << std::get<2>(l);
