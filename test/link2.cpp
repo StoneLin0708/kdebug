@@ -1,5 +1,5 @@
 #include "link_test.hpp"
 
 void link2() {
-    LOG(kdebug::info) << "link" << 2;
+    LOG(info) << "link" << 2;
 }

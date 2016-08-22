@@ -1,5 +1,6 @@
-#include "debug.hpp"
+#include "kdebug.h"
 #include <unistd.h>
+#include <iostream>
 
 using namespace kdebug;
 
@@ -8,11 +9,15 @@ int main(){
     LOG(info) << "info logging";
     sleep(1);
 
-    debug.set_fileoutput("loggin.txt");
+    log.set_fileoutput("loggin.txt");
+
+    LOG(warning) << "warning logging";
+    LOG(error) << "error logging";
 
     LOG(file) << "file logging";
-    LOG(warning) << "warning logging"<<" abc";
-    LOG(error) << "error logging"<<" abc!!";
-    debug.list();
+    LOG(file) << "file logging";
+
+    // std::cout << kdebug::debug.back();
+    // std::cout << "test\n";
     return 0;
 }

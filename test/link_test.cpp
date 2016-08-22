@@ -3,7 +3,7 @@
 
 int main(void)
 {
-    LOG(kdebug::info) << "program starting...\n";
+    LOG(info) << "program starting...";
     link1();
     link2();
 

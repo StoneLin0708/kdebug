@@ -1,50 +1,64 @@
 #include <streambuf>
 #include <ctime>
+#include <iomanip>
 
 #include "debug.hpp"
 
+using std::cout;
+using std::cerr;
 using std::map;
 using std::ostream;
 using std::string;
 using std::streambuf;
+using std::stringbuf;
+using std::stringstream;
 
 namespace kdebug{
 
 map<level, const string> levelstring = {
-    {null, "null"},
-    {file, "file"},
-    {info,"info"},
-    {warning,"warning"},
-    {error,"error"},
-};
-
-map<level, const string> levelunits = {
-    {null, ""},
-    {file, "file"},
-    {info,"info"},
-    {warning,"warning"},
-    {error,"error"},
+    {null,    "null:    "},
+    {file,    "file:    "},
+    {info,    "info:    "},
+    {warning, "warning: "},
+    {error,   "error:   "},
 };
 
 template <typename Clock, typename Duration>
-dbg<Clock, Duration>::dbg()
-    : _starttime(Clock::now()), _flag_logged(true) {}
+dbg<Clock, Duration>::dbg(std::string unit)
+    : _starttime(Clock::now()), _flag_logged(true), unit(unit) {}
 
 template <typename Clock, typename Duration>
 dbg<Clock, Duration>::~dbg() {
+    cout << std::endl;
+    _output_file << '\n';
     if (_output_file.is_open()) _output_file.close();
 }
 
 template <typename Clock, typename Duration>
 dbg<Clock, Duration> &dbg<Clock, Duration>::set_level(level l) {
-    if(!_flag_logged){
-        log();
-    }
-
     _level = l;
-    _time = time();
+    stringbuf buf;
+    ostream output(&buf);
+    output << "\n[" << levelstring[_level]
+        << current_timestr()
+        << " | " << time() << unit << "]: ";
 
-    _flag_logged = false;
+    switch (_level) {
+        case null:
+            return *this;
+        case file:
+            if (_output_file.is_open()) {
+                _output_file << buf.str();
+            }
+            break;
+        case info:
+        case warning:
+            cout << buf.str();
+            break;
+        case error:
+            cerr << buf.str();
+            break;
+    }
     return *this;
 }
 
@@ -63,19 +77,16 @@ dbg<Clock, Duration> &dbg<Clock, Duration>::operator<< (T t) {
             break;
         case file:
             if (_output_file.is_open()) {
-                _output_file << "[" << levelstring[_level]
-                    << ": " << timestr() << "]: " << t << '\n';
+                _output_file << t;
             }
             break;
         case info:
             break;
         case warning:
-            std::cout << "[" << levelstring[_level]
-                << ": " << timestr() << "]: " << t << '\n';
+            cout << t;
             break;
         case error:
-            std::cerr << "[" << levelstring[_level]
-                << ": " << timestr() << "]: " << t << '\n';
+            cerr << t;
             break;
     }
     return *this;
@@ -83,25 +94,30 @@ dbg<Clock, Duration> &dbg<Clock, Duration>::operator<< (T t) {
 
 template <typename Clock, typename Duration>
 void dbg<Clock, Duration>::log() {
-    static std::string s;
-    _ss>> s;
+    string s;
+    _ss >> s;
+
     _log.push_back(std::make_tuple(_time, _level, s));
-    _ss.str(std::string());
+    _ss.str(string());
     _ss.clear();
     s.clear();
     _flag_logged = true;
 }
 
 template <typename Clock, typename Duration>
-long dbg<Clock, Duration>::time() {
-    return std::chrono::duration_cast
-        <std::chrono::microseconds>
+string dbg<Clock, Duration>::time() {
+    const long timepassed = std::chrono::duration_cast<Duration>
         (Clock::now()-_starttime).count();
+    _starttime = Clock::now();
+
+    stringstream ss;
+    ss << timepassed;
+    return ss.str();
 }
 
 
 template <typename Clock, typename Duration>
-string dbg<Clock, Duration>::timestr() {
+string dbg<Clock, Duration>::current_timestr() {
     time_t current_time;
     std::time(&current_time);
     struct tm *time_info = std::localtime(&current_time);
@@ -123,31 +139,40 @@ void dbg<Clock, Duration>::list() {
 }
 
 template <typename Clock, typename Duration>
-typename dbg<Clock, Duration>::iterator dbg<Clock, Duration>::begin()
-{
+typename dbg<Clock, Duration>::iterator dbg<Clock, Duration>::begin() {
     return _log.begin();
 }
 
 template <typename Clock, typename Duration>
-typename dbg<Clock, Duration>::iterator dbg<Clock, Duration>::end()
-{
+typename dbg<Clock, Duration>::iterator dbg<Clock, Duration>::end() {
     if(!_flag_logged)
         log();
     return _log.end();
 }
 
 template <typename Clock, typename Duration>
-typename dbg<Clock, Duration>::log_t& dbg<Clock, Duration>::back()
-{
+typename dbg<Clock, Duration>::log_t dbg<Clock, Duration>::back() {
     if(!_flag_logged)
         log();
-    return _log.back();
+    if (_log.size() > 0) {
+        return _log.back();
+    } else {
+        string empt = "empty";
+        return std::make_tuple(_time, _level, empt);
+    }
 }
 
 template class dbg <std::chrono::high_resolution_clock,
                     std::chrono::microseconds>;
+template class dbg <std::chrono::system_clock,
+                    std::chrono::seconds>;
+template class dbg <std::chrono::system_clock,
+                    std::chrono::milliseconds>;
 
-Debug debug;
+Debug debug(" ms");
+Timer timer(" us");
+Log log(" sec");
+
 // implement all type support by ostream
 template Debug& Debug::operator<< (bool);
 template Debug& Debug::operator<< (short);
@@ -168,5 +193,49 @@ template Debug& Debug::operator<< (ostream& (*fp) (ostream&));
 template Debug& Debug::operator<< (std::ios& (*fp)(std::ios&));
 template Debug& Debug::operator<< (std::ios_base& (*fp)(std::ios_base&));
 
+template Timer& Timer::operator<< (bool);
+template Timer& Timer::operator<< (short);
+template Timer& Timer::operator<< (unsigned short);
+template Timer& Timer::operator<< (int);
+template Timer& Timer::operator<< (unsigned int);
+template Timer& Timer::operator<< (long);
+template Timer& Timer::operator<< (unsigned long);
+template Timer& Timer::operator<< (float);
+template Timer& Timer::operator<< (double);
+template Timer& Timer::operator<< (long double);
+template Timer& Timer::operator<< (void*);
+template Timer& Timer::operator<< (char);
+template Timer& Timer::operator<< (const char*);
+template Timer& Timer::operator<< (string);
+template Timer& Timer::operator<< (streambuf*);
+template Timer& Timer::operator<< (ostream& (*fp) (ostream&));
+template Timer& Timer::operator<< (std::ios& (*fp)(std::ios&));
+template Timer& Timer::operator<< (std::ios_base& (*fp)(std::ios_base&));
 
+template Log& Log::operator<< (bool);
+template Log& Log::operator<< (short);
+template Log& Log::operator<< (unsigned short);
+template Log& Log::operator<< (int);
+template Log& Log::operator<< (unsigned int);
+template Log& Log::operator<< (long);
+template Log& Log::operator<< (unsigned long);
+template Log& Log::operator<< (float);
+template Log& Log::operator<< (double);
+template Log& Log::operator<< (long double);
+template Log& Log::operator<< (void*);
+template Log& Log::operator<< (char);
+template Log& Log::operator<< (const char*);
+template Log& Log::operator<< (string);
+template Log& Log::operator<< (streambuf*);
+template Log& Log::operator<< (ostream& (*fp) (ostream&));
+template Log& Log::operator<< (std::ios& (*fp)(std::ios&));
+template Log& Log::operator<< (std::ios_base& (*fp)(std::ios_base&));
+
+}
+
+std::ostream& operator<<(std::ostream& os, kdebug::Debug::log_t& l) {
+    os<< std::get<0>(l)<< ' '
+      << kdebug::levelstring[std::get<1>(l)]<<" : "
+      << std::get<2>(l);
+    return os;
 }
