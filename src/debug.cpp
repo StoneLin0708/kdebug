@@ -29,8 +29,6 @@ dbg<Clock, Duration>::dbg(std::string unit)
 
 template <typename Clock, typename Duration>
 dbg<Clock, Duration>::~dbg() {
-    cout << std::endl;
-    _output_file << '\n';
     if (_output_file.is_open()) _output_file.close();
 }
 
@@ -39,7 +37,7 @@ dbg<Clock, Duration> &dbg<Clock, Duration>::set_level(level l) {
     _level = l;
     stringbuf buf;
     ostream output(&buf);
-    output << "\n[" << levelstring[_level]
+    output << "[" << levelstring[_level]
         << current_timestr()
         << " | " << time() << unit << "]: ";
 
@@ -48,15 +46,15 @@ dbg<Clock, Duration> &dbg<Clock, Duration>::set_level(level l) {
             return *this;
         case file:
             if (_output_file.is_open()) {
-                _output_file << buf.str();
+                _output_file << std::endl << buf.str();
             }
             break;
         case info:
         case warning:
-            cout << buf.str();
+            cout << std::endl << buf.str();
             break;
         case error:
-            cerr << buf.str();
+            cerr << std::endl << buf.str();
             break;
     }
     return *this;

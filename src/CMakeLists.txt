@@ -6,5 +6,5 @@ file(GLOB_RECURSE DEBUG_HEADER
 add_library(kdebug debug.cpp)
 
 message("--> headers: ${DEBUG_HEADER}")
-install(FILES ${DEBUG_HEADER} DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
+install(FILES ${DEBUG_HEADER} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/kdebug)
 install(TARGETS kdebug DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
