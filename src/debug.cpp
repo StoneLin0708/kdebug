@@ -79,7 +79,6 @@ dbg<Clock, Duration> &dbg<Clock, Duration>::operator<< (T t) {
             }
             break;
         case info:
-            break;
         case warning:
             cout << t;
             break;
