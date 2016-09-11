@@ -84,7 +84,7 @@ std::ostream& operator<<(std::ostream& os,
 // macros
 #ifdef DEBUG_MESSAGE
 #define DBG(level) kdebug::debug.set_level(kdebug::level)
-#define TIMER(level) kdebug::timer.set_level(kdeug::level)
+#define TIMER(level) kdebug::timer.set_level(kdebug::level)
 #define LOG(level) kdebug::log.set_level(kdebug::level)
 #else
 #define DBG(level) kdebug::debug.set_level(kdebug::null)

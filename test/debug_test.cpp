@@ -18,6 +18,16 @@ int main(){
     LOG(file) << "file logging";
     LOG(file) << "file logging";
 
+    DBG(null) << "nothing";
+    DBG(info) << "info debugging";
+    DBG(warning) << "warning debugging";
+    DBG(error) << "error debugging";
+
+    TIMER(null) << "nothing";
+    TIMER(info) << "info timing";
+    TIMER(warning) << "warning timing";
+    TIMER(error) << "error timing";
+
     // std::cout << kdebug::debug.back();
     // std::cout << "test\n";
     return 0;
