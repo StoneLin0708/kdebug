@@ -5,7 +5,6 @@
 //using namespace kdebug;
 
 int main(){
-    std::cout<< kdebug::log.back();
     LOG(null) << "info logging";
     LOG(info) << "info logging";
     sleep(1);

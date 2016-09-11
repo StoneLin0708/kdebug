@@ -230,7 +230,7 @@ template Log& Log::operator<< (std::ios& (*fp)(std::ios&));
 template Log& Log::operator<< (std::ios_base& (*fp)(std::ios_base&));
 
 }
-
+/*
 std::ostream& operator<<(std::ostream& os, kdebug::Debug::log_t& l) {
     os<< std::get<0>(l)<< ' '
       << kdebug::levelstring[std::get<1>(l)]<<" : "
@@ -251,3 +251,4 @@ std::ostream& operator<<(std::ostream& os, kdebug::Log::log_t& l) {
       << std::get<2>(l);
     return os;
 }
+*/

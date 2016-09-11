@@ -68,7 +68,7 @@ extern Timer timer;
 extern Log log;
 
 }
-
+/*
 std::ostream& operator<<(std::ostream& os,
                          kdebug::Debug::log_t& l);
 
@@ -77,6 +77,7 @@ std::ostream& operator<<(std::ostream& os,
 
 std::ostream& operator<<(std::ostream& os,
                          kdebug::Log::log_t& l);
+*/
 
 #undef DBG
 #undef TIMER
