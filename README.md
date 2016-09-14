@@ -1,3 +1,5 @@
+project on github https://github.com/StoneLin0708/kdebug
+
 simple c++ debug class
 ======================
 
