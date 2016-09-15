@@ -13,14 +13,21 @@ using std::streambuf;
 using std::stringbuf;
 using std::stringstream;
 
+const string s_esc(1,(char)27);
+
+//how can i do this in compile time
+string strcolor(string &&s,string &&color){
+    return s_esc+"["+color+";1m"+s+s_esc+"[0m";
+}
+
 namespace kdebug{
 
 map<level, const string> levelstring = {
-    {null,    "null:    "},
-    {file,    "file:    "},
-    {info,    "info:    "},
-    {warning, "warning: "},
-    {error,   "error:   "},
+    {null,    "null    "},
+    {file,    "file    "},
+    {info,    strcolor("info    ","32")},
+    {warning, strcolor("warning ","33")},
+    {error,   strcolor("error   ","31")},
 };
 
 template <typename Clock, typename Duration>
