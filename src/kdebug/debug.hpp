@@ -13,16 +13,16 @@ namespace kdebug {
 
 enum level {
     null,
-    file,
     info,
     warning,
     error,
-    FILE,
     INFO,
     WARNING,
     ERROR
 };
 
+void file_logging_on(const std::string &filename);
+void file_logging_off(const std::string &filename);
 
 template <typename Clock, typename Duration>
 class dbg {
@@ -33,19 +33,11 @@ public:
     dbg(std::string unit);
     ~dbg();
 
-    dbg &set_level(level l);
-    void set_fileoutput(const std::string filename);
-    template<typename T> dbg& operator<<(T t) {
+    template<typename T> dbg &operator<<(T t) {
         _ss << t;
         switch (_level) {
             case null:
                 return *this;
-                break;
-            case FILE:
-            case file:
-                if (_output_file.is_open()) {
-                    _output_file << t;
-                }
                 break;
             case INFO:
             case info:
@@ -60,10 +52,7 @@ public:
         }
         return *this;
     }
-
-    std::string time(bool update);
-    static std::string current_timestr();
-    void log();
+    dbg &output(level l, const std::string &file_name, int line_number);
     void list();
 
     iterator begin();
@@ -75,9 +64,18 @@ private:
     typename Clock::time_point _lastlogtime;
     typename Clock::rep _time;
 
+    std::string get_current_date_string();
+    std::string get_level_string(level l);
+    std::string get_current_time_string(bool update);
+    void set_fileoutput(const std::string filename);
+    static std::string current_timestr();
+    void log();
+
+
     level _level;
-    bool _flag_logged, _should_update;
-    std::string unit;
+    bool _flag_logged, _should_update, _file_output;
+    time_t _current_console_time, _current_file_time;
+    std::string _unit;
     std::stringstream _ss;
     std::ofstream _output_file;
     std::list<log_t> _log;
@@ -91,7 +89,6 @@ typedef dbg<std::chrono::system_clock,
 typedef dbg<std::chrono::system_clock,
             std::chrono::seconds> Log;
 
-extern std::map<level, const std::string> _levelstring;
 extern Debug _debug;
 extern Timer _timer;
 extern Log _log;
@@ -101,19 +98,16 @@ extern Log _log;
 #undef DBG
 #undef TIMER
 #undef LOG
-#undef SET_FILE
 // macros
 #ifdef DEBUG_MESSAGE
-#define DBG(level) kdebug::_debug.set_level(kdebug::level)
-#define TIMER(level) kdebug::_timer.set_level(kdebug::level)
-#define LOG(level) kdebug::_log.set_level(kdebug::level)
-#define SET_FILE(filename)      \
-    kdebug::_debug.set_fileoutput(filename); \
-    kdebug::_timer.set_fileoutput(filename); \
-    kdebug::_log.set_fileoutput(filename);
+#define DBG(level)    \
+    kdebug::_debug.output(kdebug::level, __FILE__, __LINE__)
+#define TIMER(level)  \
+    kdebug::_timer.output(kdebug::level, __FILE__, __LINE__)
+#define LOG(level)    \
+    kdebug::_log.output(kdebug::level, __FILE__, __LINE__)
 #else
 #define DBG(level)
 #define TIMER(level)
 #define LOG(level)
-#define SET_FILE(filename)
 #endif
