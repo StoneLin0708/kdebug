@@ -22,12 +22,15 @@ string strcolor(string &&s,string &&color){
 
 namespace kdebug{
 
-map<level, const string> levelstring = {
+map<level, const string> _levelstring = {
     {null,    "null    "},
     {file,    "file    "},
     {info,    strcolor("info    ","32")},
     {warning, strcolor("warning ","33")},
     {error,   strcolor("error   ","31")},
+    {INFO,    strcolor("info    ","32")},
+    {WARNING, strcolor("warning ","33")},
+    {ERROR,   strcolor("error   ","31")},
 };
 
 template <typename Clock, typename Duration>
@@ -42,24 +45,32 @@ dbg<Clock, Duration>::~dbg() {
 template <typename Clock, typename Duration>
 dbg<Clock, Duration> &dbg<Clock, Duration>::set_level(level l) {
     _level = l;
+
+    bool update_time = false;
+    update_time = (l == file || l == info || l == warning || l == error);
+
     stringbuf buf;
     ostream output(&buf);
-    output << "[" << levelstring[_level]
+    output << "[" << _levelstring[_level]
         << current_timestr()
-        << " | " << time() << unit << "]: ";
+        << " | " << time(update_time) << unit << "]: ";
 
     switch (_level) {
         case null:
             return *this;
+        case FILE:
         case file:
             if (_output_file.is_open()) {
                 _output_file << std::endl << buf.str();
             }
             break;
+        case INFO:
         case info:
+        case WARNING:
         case warning:
             cout << std::endl << buf.str();
             break;
+        case ERROR:
         case error:
             cerr << std::endl << buf.str();
             break;
@@ -69,31 +80,10 @@ dbg<Clock, Duration> &dbg<Clock, Duration>::set_level(level l) {
 
 template <typename Clock, typename Duration>
 void dbg<Clock, Duration>::set_fileoutput(const string filename) {
-    _output_file.open(filename.c_str(), std::ios::out);
-}
-
-template <typename Clock, typename Duration>
-template<typename T>
-dbg<Clock, Duration> &dbg<Clock, Duration>::operator<< (T t) {
-    _ss << t;
-    switch (_level) {
-        case null:
-            return *this;
-            break;
-        case file:
-            if (_output_file.is_open()) {
-                _output_file << t;
-            }
-            break;
-        case info:
-        case warning:
-            cout << t;
-            break;
-        case error:
-            cerr << t;
-            break;
+    if (_output_file.is_open()) {
+        _output_file.close();
     }
-    return *this;
+    _output_file.open(filename.c_str(), std::ios::out);
 }
 
 template <typename Clock, typename Duration>
@@ -109,10 +99,11 @@ void dbg<Clock, Duration>::log() {
 }
 
 template <typename Clock, typename Duration>
-string dbg<Clock, Duration>::time() {
+string dbg<Clock, Duration>::time(bool update) {
     const long timepassed = std::chrono::duration_cast<Duration>
         (Clock::now()-_starttime).count();
-    _starttime = Clock::now();
+
+    if (update) _starttime = Clock::now();
 
     stringstream ss;
     ss << timepassed;
@@ -137,7 +128,7 @@ void dbg<Clock, Duration>::list() {
 
     for(auto i = _log.begin() ; i!= _log.end() ; ++i) {
         std::cout << std::get<0>(*i)
-            << levelstring[std::get<1>(*i)]
+            << _levelstring[std::get<1>(*i)]
             << " : "<< std::get<2>(*i) <<'\n';
     }
 }
@@ -173,67 +164,9 @@ template class dbg <std::chrono::system_clock,
 template class dbg <std::chrono::system_clock,
                     std::chrono::milliseconds>;
 
-Debug debug(" ms");
-Timer timer(" us");
-Log log(" sec");
-
-// implement all type support by ostream
-template Debug& Debug::operator<< (bool);
-template Debug& Debug::operator<< (short);
-template Debug& Debug::operator<< (unsigned short);
-template Debug& Debug::operator<< (int);
-template Debug& Debug::operator<< (unsigned int);
-template Debug& Debug::operator<< (long);
-template Debug& Debug::operator<< (unsigned long);
-template Debug& Debug::operator<< (float);
-template Debug& Debug::operator<< (double);
-template Debug& Debug::operator<< (long double);
-template Debug& Debug::operator<< (void*);
-template Debug& Debug::operator<< (char);
-template Debug& Debug::operator<< (const char*);
-template Debug& Debug::operator<< (string);
-template Debug& Debug::operator<< (streambuf*);
-template Debug& Debug::operator<< (ostream& (*fp) (ostream&));
-template Debug& Debug::operator<< (std::ios& (*fp)(std::ios&));
-template Debug& Debug::operator<< (std::ios_base& (*fp)(std::ios_base&));
-
-template Timer& Timer::operator<< (bool);
-template Timer& Timer::operator<< (short);
-template Timer& Timer::operator<< (unsigned short);
-template Timer& Timer::operator<< (int);
-template Timer& Timer::operator<< (unsigned int);
-template Timer& Timer::operator<< (long);
-template Timer& Timer::operator<< (unsigned long);
-template Timer& Timer::operator<< (float);
-template Timer& Timer::operator<< (double);
-template Timer& Timer::operator<< (long double);
-template Timer& Timer::operator<< (void*);
-template Timer& Timer::operator<< (char);
-template Timer& Timer::operator<< (const char*);
-template Timer& Timer::operator<< (string);
-template Timer& Timer::operator<< (streambuf*);
-template Timer& Timer::operator<< (ostream& (*fp) (ostream&));
-template Timer& Timer::operator<< (std::ios& (*fp)(std::ios&));
-template Timer& Timer::operator<< (std::ios_base& (*fp)(std::ios_base&));
-
-template Log& Log::operator<< (bool);
-template Log& Log::operator<< (short);
-template Log& Log::operator<< (unsigned short);
-template Log& Log::operator<< (int);
-template Log& Log::operator<< (unsigned int);
-template Log& Log::operator<< (long);
-template Log& Log::operator<< (unsigned long);
-template Log& Log::operator<< (float);
-template Log& Log::operator<< (double);
-template Log& Log::operator<< (long double);
-template Log& Log::operator<< (void*);
-template Log& Log::operator<< (char);
-template Log& Log::operator<< (const char*);
-template Log& Log::operator<< (string);
-template Log& Log::operator<< (streambuf*);
-template Log& Log::operator<< (ostream& (*fp) (ostream&));
-template Log& Log::operator<< (std::ios& (*fp)(std::ios&));
-template Log& Log::operator<< (std::ios_base& (*fp)(std::ios_base&));
+Debug _debug(" ms");
+Timer _timer(" us");
+Log _log(" sec");
 
 }
 /*
