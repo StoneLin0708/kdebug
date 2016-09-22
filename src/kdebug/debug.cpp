@@ -10,6 +10,9 @@ using std::ostream;
 using std::string;
 using std::stringstream;
 
+
+namespace kdebug{
+
 const string s_esc(1,(char)27);
 
 //how can i do this in compile time
@@ -17,11 +20,30 @@ string strcolor(string &&s,string &&color){
     return s_esc+"["+color+";1m"+s+s_esc+"[0m";
 }
 
-namespace kdebug{
+static map<level, const string> levelstring = {
+    {null,    "null    "},
+    {info,    strcolor("info    ","32")},
+    {warning, strcolor("warning ","33")},
+    {error,   strcolor("error   ","31")},
+    {INFO,    strcolor("info    ","32")},
+    {WARNING, strcolor("warning ","33")},
+    {ERROR,   strcolor("error   ","31")},
+};
+
+static map<level, const string> levelstring_file = {
+    {null,    "null    "},
+    {info,    "info    "},
+    {warning, "warning "},
+    {error,   "error   "},
+    {INFO,    "info    "},
+    {WARNING, "warning "},
+    {ERROR,   "error   "},
+};
 
 template <typename Clock, typename Duration>
 dbg<Clock, Duration>::dbg(std::string unit)
-    : _starttime(Clock::now()), _unit(unit) {}
+    : _file_output(false), _file_name(true),
+    _starttime(Clock::now()), _unit(unit) {}
 
 template <typename Clock, typename Duration>
 dbg<Clock, Duration>::~dbg() {
@@ -36,14 +58,20 @@ dbg<Clock, Duration> &dbg<Clock, Duration>::output(level l,
     // 2. write the logging level
     // 3. write timing
     // 4. write filename and line number
+    _level = l;
 
     bool update_time = false;
     update_time = (l == info || l == warning || l == error);
 
     stringstream out;
-    out << std::flush << get_current_date_string() << std::flush
-        << '[' << get_level_string(l) << " | "
-        << get_current_time_string(update_time) << " | ";
+    out << std::flush << get_current_date_string() << std::flush<< '[';
+
+    if (_file_output)
+        out << levelstring_file[l];
+    else
+        out << levelstring[l];
+
+    out << " | " << get_current_time_string(update_time) << " | ";
 
     if (_file_name)
         out << file_name.substr(file_name.find_last_of("/")+1)
@@ -98,24 +126,15 @@ string dbg<Clock, Duration>::get_current_date_string() {
     return out.str();
 }
 
-template <typename Clock, typename Duration>
-string dbg<Clock, Duration>::get_level_string(level l) {
-    _level = l;
+// template <typename Clock, typename Duration>
+// string dbg<Clock, Duration>::get_level_string(level l) {
+//     _level = l;
 
-    map<level, const string> levelstring = {
-        {null,    "null    "},
-        {info,    strcolor("info    ","32")},
-        {warning, strcolor("warning ","33")},
-        {error,   strcolor("error   ","31")},
-        {INFO,    strcolor("info    ","32")},
-        {WARNING, strcolor("warning ","33")},
-        {ERROR,   strcolor("error   ","31")},
-    };
 
-    stringstream ss;
-    ss << levelstring[_level];
-    return ss.str();
-}
+//     stringstream ss;
+//     ss << levelstring[_level];
+//     return ss.str();
+// }
 
 template <typename Clock, typename Duration>
 void dbg<Clock, Duration>::set_fileoutput(const string filename) {
@@ -123,6 +142,9 @@ void dbg<Clock, Duration>::set_fileoutput(const string filename) {
         _output_file.close();
     }
     _output_file.open(filename.c_str(), std::ios::out);
+    if (_output_file.is_open()){
+        _file_output = true;
+    }
 }
 
 template <typename Clock, typename Duration>
