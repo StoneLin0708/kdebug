@@ -1,4 +1,4 @@
-#include "kdebug.h"
+#include "kdebug/kdebug.h"
 #include "link_test.hpp"
 
 int main(void)

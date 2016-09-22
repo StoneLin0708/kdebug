@@ -1,4 +1,4 @@
-#include "kdebug.h"
+#include "kdebug/kdebug.h"
 
 int main(void) {
   LOG("logging");

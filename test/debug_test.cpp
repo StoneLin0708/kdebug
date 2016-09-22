@@ -1,15 +1,14 @@
-#include "kdebug.h"
 #include <unistd.h>
 #include <iostream>
 
-//using namespace kdebug;
+#include "kdebug/kdebug.h"
 
 int main(){
     LOG(null) << "info logging";
     LOG(info) << "info logging";
     sleep(1);
 
-    kdebug::log.set_fileoutput("loggin.txt");
+    SET_FILE("loggin.txt")
 
     LOG(warning) << "warning logging";
     LOG(error) << "error logging";
