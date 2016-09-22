@@ -4,29 +4,34 @@
 #include "kdebug/kdebug.h"
 
 int main(){
-    LOG(null) << "info logging";
-    LOG(info) << "info logging";
+    // log test
+    LOG(INFO) << "info logging";
     sleep(1);
+    LOG(INFO) << "info logging";
+    sleep(1);
+    LOG(INFO) << "info logging";
+    LOG(WARNING) << "warning logging";
+    LOG(ERROR) << "error logging";
+    LOG(null) << "info logging";
 
-    SET_FILE("loggin.txt")
-
-    LOG(warning) << "warning logging";
-    LOG(error) << "error logging";
-
-    LOG(file) << "file logging";
-    LOG(file) << "file logging";
-
+    // debug test
+    DBG(INFO) << "info debugging";
+    sleep(1);
+    DBG(INFO) << "info debugging";
+    sleep(1);
+    DBG(INFO) << "info debugging";
+    DBG(WARNING) << "warning debugging";
+    DBG(ERROR) << "error debugging";
     DBG(null) << "nothing";
-    DBG(info) << "info debugging";
-    DBG(warning) << "warning debugging";
-    DBG(error) << "error debugging";
 
+    // timer test
+    TIMER(INFO) << "info timing";
+    sleep(1);
+    TIMER(INFO) << "info timing";
+    sleep(1);
+    TIMER(INFO) << "info timing";
+    TIMER(WARNING) << "warning timing";
+    TIMER(ERROR) << "error timing";
     TIMER(null) << "nothing";
-    TIMER(info) << "info timing";
-    TIMER(warning) << "warning timing";
-    TIMER(error) << "error timing";
-
-    // std::cout << kdebug::debug.back();
-    // std::cout << "test\n";
     return 0;
 }
