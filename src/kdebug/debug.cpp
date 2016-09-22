@@ -21,7 +21,7 @@ namespace kdebug{
 
 template <typename Clock, typename Duration>
 dbg<Clock, Duration>::dbg(std::string unit)
-    : _starttime(Clock::now()), _flag_logged(true), _unit(unit) {}
+    : _starttime(Clock::now()), _unit(unit) {}
 
 template <typename Clock, typename Duration>
 dbg<Clock, Duration>::~dbg() {
@@ -43,24 +43,34 @@ dbg<Clock, Duration> &dbg<Clock, Duration>::output(level l,
     stringstream out;
     out << std::flush << get_current_date_string() << std::flush
         << '[' << get_level_string(l) << " | "
-        << get_current_time_string(update_time) << " | "
-        << file_name.substr(file_name.find_last_of("/")+1)
-        << ":" << line_number << "] ";
+        << get_current_time_string(update_time) << " | ";
 
-    switch (_level) {
-        case null:
-            return *this;
-        case INFO:
-        case info:
-        case WARNING:
-        case warning:
-            cout << std::endl << out.str();
-            break;
-        case ERROR:
-        case error:
-            cerr << std::endl << out.str();
-            break;
+    if (_file_name)
+        out << file_name.substr(file_name.find_last_of("/")+1)
+            << ":" << line_number;
+    out << " ] ";
+
+    if(_file_output){
+        if(_output_file.is_open()){
+            _output_file<<out.str();
+        }
+    }else{
+        switch (_level) {
+            case null:
+                return *this;
+            case INFO:
+            case info:
+            case WARNING:
+            case warning:
+                cout << std::endl << out.str();
+                break;
+            case ERROR:
+            case error:
+                cerr << std::endl << out.str();
+                break;
+        }
     }
+
     return *this;
 }
 
@@ -125,16 +135,6 @@ string dbg<Clock, Duration>::get_current_time_string(bool update) {
     stringstream out;
     out << timepassed << _unit;
     return out.str();
-}
-
-template <typename Clock, typename Duration>
-string dbg<Clock, Duration>::current_timestr() {
-    time_t current_time;
-    std::time(&current_time);
-    struct tm *time_info = std::localtime(&current_time);
-    char buffer[1024];
-    std::strftime(buffer, 1024, "%m/%d/%y %A %T", time_info);
-    return std::string(buffer);
 }
 
 template class dbg <std::chrono::high_resolution_clock,

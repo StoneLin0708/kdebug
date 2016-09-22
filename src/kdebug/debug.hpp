@@ -21,10 +21,6 @@ enum level {
     ERROR
 };
 
-void file_logging_on();
-void file_logging_off();
-void file_name_on();
-void file_name_off();
 
 template <typename Clock, typename Duration>
 class dbg {
@@ -52,18 +48,21 @@ public:
     }
     dbg &output(level l, const std::string &file_name, int line_number);
 
+    bool _file_output, _file_name;
+
 private:
     typename Clock::time_point _starttime;
 
     std::string get_current_date_string();
     std::string get_level_string(level l);
     std::string get_current_time_string(bool update);
+
     void set_fileoutput(const std::string filename);
-    static std::string current_timestr();
 
     level _level;
-    bool _flag_logged, _should_update, _file_output;
-    std::string _unit;
+    bool _should_update;
+
+    const std::string _unit;
     std::ofstream _output_file;
 };
 
@@ -93,6 +92,27 @@ extern Log _log;
     kdebug::_timer.output(kdebug::level, __FILE__, __LINE__)
 #define LOG(level)    \
     kdebug::_log.output(kdebug::level, __FILE__, __LINE__)
+
+#define SET_OUTPUT_FILE(filename)\
+    kdebug::_debug.set_fileoutput(std::string(filename)+"debug");\
+    kdebug::_timer.set_fileoutput(std::string(filename)+"timer");\
+    kdebug::_log.set_fileoutput(std::string(filename)+"log");
+
+#define DBG_OUTPUT_FILE( flag )
+    kdebug::_debug._file_logging = flag;
+#define DBG_SOURCE_NAME( flag )
+    kdebug::_debug._file_name = flag;
+
+#define TIMER_OUTPUT_FILE( flag )
+    kdebug::_timer._file_logging = flag;
+#define TIMER_SOURCE_NAME( flag )
+    kdebug::_timer._file_name = flag;
+
+#define LOG_OUTPUT_FILE( flag )
+    kdebug::_log._file_logging = flag;
+#define LOG_SOURCE_NAME( flag )
+    kdebug::_log._file_name = flag;
+
 #else
 #define DBG(level)
 #define TIMER(level)
