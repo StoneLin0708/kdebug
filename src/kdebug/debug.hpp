@@ -125,9 +125,10 @@ extern Log _log;
     kdebug::_log._file_name = flag;
 
 #else
-#define DBG(level) while(false) std::cout
-#define TIMER(level) while(false) std::cout
-#define LOG(level) while(false) std::cout
+// #define DBG(level) while(false) std::cout
+#define DBG(level) if(false) std::cout
+#define TIMER(level) if(false) std::cout
+#define LOG(level) if(false) std::cout
 
 #define SET_OUTPUT_FILE(filename)
 
