@@ -4,8 +4,6 @@
 #include "kdebug/kdebug.h"
 
 int main(){
-
-
     // log test
     LOG(INFO) << "info logging";
     sleep(1);
@@ -58,9 +56,9 @@ int main(){
     TIMER(INFO) << "timer to file";
     LOG(INFO) << "log to file";
 
-    DBG_OUTPUT_FILE( false )
-    TIMER_OUTPUT_FILE( false )
-    LOG_OUTPUT_FILE( false )
+    DBG_OUTPUT_FILE(false)
+    TIMER_OUTPUT_FILE(false)
+    LOG_OUTPUT_FILE(false)
 
     DBG(INFO) << "dbg file false";
     TIMER(INFO) << "timer file false";
