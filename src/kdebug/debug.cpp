@@ -13,6 +13,7 @@ using std::stringstream;
 
 namespace kdebug{
 
+bool destruct = false;
 const string s_esc(1,(char)27);
 
 //how can i do this in compile time
@@ -47,6 +48,10 @@ dbg<Clock, Duration>::dbg(std::string unit)
 
 template <typename Clock, typename Duration>
 dbg<Clock, Duration>::~dbg() {
+    if(!destruct){
+        std::cout<<'\n';
+        destruct = true;
+    }
     if (_output_file.is_open()) _output_file.close();
 }
 
