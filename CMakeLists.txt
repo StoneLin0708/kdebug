@@ -40,4 +40,4 @@ target_link_libraries(kdebug_test_c kdebug)
 
 add_test(cpp_debug_test ./kdebug_unit_test)
 add_test(cpp_link_test ./link_test)
-add_test(c_debug_test ./debug_test_c)
+add_test(c_debug_test ./kdebug_test_c)
