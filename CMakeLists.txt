@@ -4,8 +4,8 @@ project(kdebug)
 enable_testing()
 
 # c/c++ options
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -O3")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -Wextra -O3")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -O3 -fPIC")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -Wextra -O3 -fPIC")
 add_definitions(-DKDEBUG_MESSAGE)
 
 # source
