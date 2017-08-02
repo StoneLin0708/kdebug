@@ -1,180 +1,153 @@
+#include <chrono>
 #include <ctime>
 #include <iomanip>
-
+#include <sstream>
+#include <fstream>
 #include "debug.hpp"
 
 using std::cout;
 using std::cerr;
-using std::map;
 using std::ostream;
 using std::string;
+using std::ofstream;
 using std::stringstream;
+using sec = std::chrono::seconds;
+using ms = std::chrono::milliseconds;
+using us = std::chrono::microseconds;
+using sclock = std::chrono::system_clock;
+using hclock = std::chrono::high_resolution_clock;
 
+namespace kdebug {
 
-namespace kdebug{
-
-bool destruct = false;
-const string s_esc(1,(char)27);
-
-//how can i do this in compile time
-string strcolor(string &&s,string &&color){
-    return s_esc+"["+color+";1m"+s+s_esc+"[0m";
-}
-
-static map<level, const string> levelstring = {
-    {null,    "null    "},
-    {info,    strcolor("info    ","32")},
-    {warning, strcolor("warning ","33")},
-    {error,   strcolor("error   ","31")},
-    {INFO,    strcolor("info    ","32")},
-    {WARNING, strcolor("warning ","33")},
-    {ERROR,   strcolor("error   ","31")},
+class KDBG {
+ public:
+  KDBG() = default;
+  ~KDBG() { cout << std::endl; }
+  static hclock::time_point start_time_;
+  static ofstream target_;
 };
 
-static map<level, const string> levelstring_file = {
-    {null,    "null    "},
-    {info,    "info    "},
-    {warning, "warning "},
-    {error,   "error   "},
-    {INFO,    "info    "},
-    {WARNING, "warning "},
-    {ERROR,   "error   "},
-};
+KDBG storage_;
+hclock::time_point KDBG::start_time_ = hclock::now();
+ofstream KDBG::target_;
 
-template <typename Clock, typename Duration>
-dbg<Clock, Duration>::dbg(std::string unit)
-    : _file_output(false), _file_name(true),
-    _starttime(Clock::now()), _unit(unit) {}
+// output color string macro
+#define COLOR_STRING(color, s) "\033[" #color ";1m" #s "\033[0m"
 
-template <typename Clock, typename Duration>
-dbg<Clock, Duration>::~dbg() {
-    if(!destruct){
-        std::cout<<'\n';
-        destruct = true;
+string ToTimeString(long t) {
+  struct tm* time_val = gmtime(&t);
+
+  stringstream ss;
+  ss << time_val->tm_year + 1900 << "/" << time_val->tm_mon + 1 << "/"
+     << time_val->tm_mday << "-" << time_val->tm_hour << ":" << time_val->tm_min
+     << ":" << time_val->tm_sec;
+  return ss.str();
+}
+
+ostream& SevereLevel(Severity sev) {
+  if (KDBG::target_.is_open()) {
+    switch (sev) {
+      case info:
+      case INFO:
+        return KDBG::target_ << "\n[INFO   ";
+      case warning:
+      case WARNING:
+        return KDBG::target_ << "\n[WARNING";
+      case error:
+      case ERROR:
+        return KDBG::target_ << "\n[ERROR  ";
+      default:
+        return KDBG::target_ << "\n[INFO   ";
     }
-    if (_output_file.is_open()) _output_file.close();
+  } else {
+    switch (sev) {
+      case info:
+      case INFO:
+        return cout << std::endl << "[" << std::setw(8) << COLOR_STRING(32, INFO);
+      case warning:
+      case WARNING:
+        return cout << std::endl
+                    << "[" << std::setw(8) << COLOR_STRING(33, WARNING);
+      case error:
+      case ERROR:
+        return cerr << std::endl
+                    << "[" << std::setw(8) << COLOR_STRING(31, ERROR);
+      default:
+        return cout << std::endl << "[" << std::setw(8) << COLOR_STRING(32, INFO);
+    }
+  }
+}
+
+template <>
+inline string Unit<sec>() {
+  return " sec";
+}
+
+template <>
+inline string Unit<ms>() {
+  return " ms";
+}
+
+template <>
+inline string Unit<us>() {
+  return " us";
 }
 
 template <typename Clock, typename Duration>
-dbg<Clock, Duration> &dbg<Clock, Duration>::output(level l,
-                                                   const string &file_name,
-                                                   int line_number) {
-    // 1. write the date time if changes
-    // 2. write the logging level
-    // 3. write timing
-    // 4. write filename and line number
-    _level = l;
-
-    bool update_time = false;
-    update_time = (l == info || l == warning || l == error);
-
-    stringstream out;
-    out << std::flush << get_current_date_string() << std::flush<< '[';
-
-    if (_file_output)
-        out << levelstring_file[l];
-    else
-        out << levelstring[l];
-
-    out << " | " << get_current_time_string(update_time) << " | ";
-
-    if (_file_name)
-        out << file_name.substr(file_name.find_last_of("/")+1)
-            << ":" << line_number;
-    out << " ] ";
-
-    if(_file_output){
-        if(_output_file.is_open()){
-            _output_file<<out.str();
-        }
-    }else{
-        switch (_level) {
-            case null:
-                return *this;
-            case INFO:
-            case info:
-            case WARNING:
-            case warning:
-                cout << std::endl << out.str();
-                break;
-            case ERROR:
-            case error:
-                cerr << std::endl << out.str();
-                break;
-        }
-    }
-
-    return *this;
+ostream& KDebug(Severity sev, const string& filename, int line_num,
+                bool log_date, bool log_time) {
+  // compute time
+  auto current = Clock::now();
+  auto time_passed = current - KDBG::start_time_;
+  long t = std::chrono::duration_cast<Duration>(time_passed).count();
+  KDBG::start_time_ = current;
+  // prepare output stream
+  ostream& os = SevereLevel(sev) << " ";
+  // log time
+  if (log_date) {
+    os << ToTimeString(t);
+  } else if (t > 86400000) {
+    time_t current_time;
+    std::time(&current_time);
+    os << ToTimeString(current_time);
+  } else if (log_time) {
+    os << t << Unit<Duration>();
+  }
+  os << " " << filename.substr(filename.find_last_of("/") + 1) << ": "
+     << line_num << "]: ";
+  return os;
 }
 
-template <typename Clock, typename Duration>
-string dbg<Clock, Duration>::get_current_date_string() {
-    stringstream out;
+template ostream& KDebug<sclock, sec>(Severity, const string&, int, bool, bool);
+template ostream& KDebug<hclock, ms>(Severity, const string&, int, bool, bool);
+template ostream& KDebug<hclock, us>(Severity, const string&, int, bool, bool);
 
-    auto now = Clock::now();
-    time_t current_time = Clock::to_time_t(now);
-    struct tm *time_info = std::localtime(&current_time);
-    char buffer[1024] = {'\0'};
-    std::strftime(buffer, 1024, "[%m/%d/%y %A]\n", time_info);
-
-    if (_file_output) {
-        if (current_time - _current_file_time > 86400) {
-            _current_file_time = current_time;
-            out << buffer;
-        }
-    } else {
-        if (current_time - _current_console_time > 86400) {
-            _current_console_time = current_time;
-            out << buffer;
-        }
-    }
-    return out.str();
+ostream& Log(Severity sev, const string& filename, int line_num) {
+  return KDebug<sclock, sec>(sev, filename, line_num, false, true);
 }
 
-// template <typename Clock, typename Duration>
-// string dbg<Clock, Duration>::get_level_string(level l) {
-//     _level = l;
-
-
-//     stringstream ss;
-//     ss << levelstring[_level];
-//     return ss.str();
-// }
-
-template <typename Clock, typename Duration>
-void dbg<Clock, Duration>::set_fileoutput(const string filename) {
-    if (_output_file.is_open()) {
-        _output_file.close();
-    }
-    _output_file.open(filename.c_str(), std::ios::out);
-    if (_output_file.is_open()){
-        _file_output = true;
-    }
+ostream& Timer(Severity sev, const string& filename, int line_num) {
+  return KDebug<hclock, us>(sev, filename, line_num, false, true);
 }
 
-template <typename Clock, typename Duration>
-string dbg<Clock, Duration>::get_current_time_string(bool update) {
-    const long timepassed = std::chrono::duration_cast<Duration>
-        (Clock::now()-_starttime).count();
-
-    if (update) _starttime = Clock::now();
-
-    stringstream out;
-    out << timepassed << _unit;
-    return out.str();
+ostream& Date(Severity sev, const string& filename, int line_num) {
+  return KDebug<sclock, sec>(sev, filename, line_num, true, false);
 }
 
-template class dbg <std::chrono::high_resolution_clock,
-                    std::chrono::microseconds>;
-template class dbg <std::chrono::system_clock,
-                    std::chrono::seconds>;
-template class dbg <std::chrono::system_clock,
-                    std::chrono::milliseconds>;
-
-time_t _current_console_time = 0;
-time_t _current_file_time = 0;
-Debug _debug(" ms");
-Timer _timer(" us");
-Log _log(" sec");
-
+ostream& KDebug(Severity sev, const string& filename, int line_num) {
+  return KDebug<hclock, ms>(sev, filename, line_num, true, true);
 }
+
+#undef COLOR_STRING
+
+void OutputToFile(const string& program_name) {
+  long current_time = sclock::now().time_since_epoch().count();
+  string filepath = program_name + ".kdebug." + std::to_string(current_time);
+  KDBG::target_.open(filepath);
+}
+
+void CloseOutputFile() {
+  KDBG::target_.close();
+}
+
+} /* end of kdebug namespace */
